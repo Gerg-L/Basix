@@ -6,7 +6,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = inputs @ {flake-parts, ...}:
+  outputs = inputs @ {flake-parts, self, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
       perSystem = {pkgs, ...}: {
@@ -22,14 +22,14 @@
             n: v:
               lib.optionalAttrs (v == "regular" && lib.hasSuffix ".json" n) {
                 name = lib.removeSuffix ".json" n;
-                value = x + n;
+                value = lib.importJSON ("${x}/${n}");
               }
           ))
           (builtins.readDir x);
       in {
         schemeData = {
-          base16 = evalSchemeData ./json/base16;
-          base24 = evalSchemeData ./json/base24;
+          base16 = evalSchemeData "${self}/json/base16";
+          base24 = evalSchemeData "${self}/json/base24";
         };
       };
     };
